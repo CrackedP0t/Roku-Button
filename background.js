@@ -1,16 +1,16 @@
 let tab_info = new Map();
 
 function extract(url, id) {
+    let cached = tab_info.get(id);
+    if (cached) return cached;
+
     for (let extractor of extractors) {
         const result = extractor.url_regexp.exec(url);
-        console.log(extractor.url_regexp, result);
+        console.log(url, extractor, result);
         if (result) {
             let content_id, media_type;
-            if (tab_info.has(id)) {
-                [content_id, media_type] = tab_info.get(id);
-            } else if (extractor.url_extractor) {
-                [content_id, media_type] = extractor.url_extractor?.(result);
-            }
+            let pair = extractor.url_extractor?.(result);
+            if (pair) [content_id, media_type] = pair;
 
             return {
                 name: extractor.name,
@@ -32,10 +32,14 @@ function set_title(url, tabId) {
     }
 }
 
+const amazon_rx = new RegExp("^https?://(?:\\w+\\.)?amazon\\.com/.*?/(\w+)/?(?:\\?.*|$)", "i");
 browser.tabs.onUpdated.addListener(async (tabId, changeInfo, tab) => {
-    if (changeInfo.status === "loading" && await browser.pageAction.isShown({ tabId: tabId })) {
+    console.log(changeInfo.status, changeInfo, tab);
+    if (changeInfo.status === "loading") {
         set_title(changeInfo.url, tabId);
         tab_info.delete(tabId);
+    } else if (changeInfo.status == "complete" && !extract(tab.url, tabId)) {
+        browser.pageAction.hide(tabId);
     }
 }, {
     properties: ["status"]
@@ -45,24 +49,40 @@ browser.tabs.onRemoved.addListener((tabId) => {
     tab_info.delete(tabId)
 });
 
-let utf8decoder = new TextDecoder();
-browser.webRequest.onBeforeRequest.addListener(
-    (details) => {
+browser.webRequest.onBeforeRequest.addListener((details) => {
+    const id_rx = /.*?\/(\w+)\/?(?:\?.*|$)/i;
+    tab_info.set(details.tabId, {
+        name: "Prime Video",
+        channel_id: 13,
+        content_id: id_rx.exec(details.documentUrl)[1],
+        media_type: "season"
+    });
+    set_title(details.documentUrl, details.tabId);
+    browser.pageAction.show(details.tabId);
+},
+    { urls: ["*://js-assets.aiv-cdn.net/playback/web_player/WebLoader.js"] }
+);
+
+browser.webRequest.onBeforeRequest.addListener((details) => {
         const raw = details.requestBody?.raw?.[0]?.bytes;
         if (raw) {
+        let utf8decoder = new TextDecoder();
             const info = utf8decoder.decode(raw);
             if (info) {
                 const title_id = /"asin":"(\w+)"/.exec(info)?.[1];
                 if (title_id) {
-                    tab_info.set(details.tabId, [title_id, "episode"]);
+                tab_info.set(details.tabId, {
+                    name: "Prime Video",
+                    channel_id: 13,
+                    content_id: rx.exec(details.documentUrl)[1],
+                    media_type: "season"
+                });
                     set_title(details.documentUrl, details.tabId);
                 }
             }
         }
     },
-    {
-        urls: ["*://fls-na.amazon.com/1/aiv-web-player/1/OE"]
-    },
+    { urls: ["*://fls-na.amazon.com/1/aiv-web-player/1/OE"] },
     ["requestBody"]
 );
 

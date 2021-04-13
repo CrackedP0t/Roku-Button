@@ -24,6 +24,8 @@
     "name": "Roku Button",
     "permissions": [
         "*://*.amazon.com/*",
+        "*://*.aiv-cdn.net/*",
+        "<all_urls>",
         "activeTab",
         "webRequest",
         "tabs"
