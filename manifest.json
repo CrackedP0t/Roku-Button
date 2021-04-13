@@ -1,0 +1,32 @@
+{
+    "background": {
+        "scripts": ["extractors.js", "background.js"]
+    },
+    "page_action": {
+        "default_icon": "RokuLogo5.svg",
+        "default_title": "Play this on your Roku",
+        "show_matches": [
+            "*://*.netflix.com/*",
+            "*://*.amazon.com/Amazon-Video/*",
+            "*://*.amazon.com/gp/video/detail/*",
+            "*://*.pandora.com/*",
+            "*://*.youtube.com/*",
+            "*://*.hulu.com/*",
+            "*://*.crunchyroll.com/*",
+            "*://*.vudu.com/*",
+            "*://*.plex.tv/*",
+            "*://*.disneyplus.com/*",
+            "*://*.twitch.tv/*",
+            "*://*.peacocktv.com/*"
+        ]
+    },  
+    "manifest_version": 2,
+    "name": "Roku Button",
+    "permissions": [
+        "*://*.amazon.com/*",
+        "activeTab",
+        "webRequest",
+        "tabs"
+    ],
+    "version": "0.0.1"
+}
