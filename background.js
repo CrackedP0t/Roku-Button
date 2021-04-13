@@ -3,6 +3,7 @@ let tab_info = new Map();
 function extract(url, id) {
     for (let extractor of extractors) {
         const result = extractor.url_regexp.exec(url);
+        console.log(extractor.url_regexp, result);
         if (result) {
             let content_id, media_type;
             if (tab_info.has(id)) {

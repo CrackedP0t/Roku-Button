@@ -36,7 +36,7 @@ const extractors = [
     {
         channel_id: 837,
         name: "YouTube",
-        url_regexp: url_rx("youtube.com", "/watch\\?v=(\\w+)"),
+        url_regexp: url_rx("youtube.com", "/watch\\?v=([\\w-]+)"),
         url_extractor: extractor("episode")
     },
     {
