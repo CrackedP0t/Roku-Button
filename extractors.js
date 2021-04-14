@@ -58,6 +58,15 @@ const extractors = [
         url_extractor: extractor("movie")
     },
     {
+        channel_id: 61322,
+        name: "HBO Max",
+        url_regexp: url_rx("hbomax.com", "/(episode|feature)/([\\w:]+)"),
+        url_extractor: (result) => {
+            let media_type = result[1] == "feature" ? "movie" : result[1];
+            return [result[2], media_type];
+        }
+    },
+    {
         channel_id: 143105, name: "VRV", url_regexp: url_rx("vrv.co")
     },
     {

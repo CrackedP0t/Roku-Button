@@ -16,6 +16,7 @@
             "*://*.crunchyroll.com/*",
             "*://*.plex.tv/*",
             "*://*.vudu.com/*",
+            "*://*.hbomax.com/*",
             "*://*.vrv.co/*",
             "*://*.disneyplus.com/*",
             "*://*.twitch.tv/*",
