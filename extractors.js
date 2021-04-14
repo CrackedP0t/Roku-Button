@@ -1,6 +1,6 @@
 function url_rxn(base, optional) {
     optional = optional || "";
-    return new RegExp(`^https?://(?:\\w*\\.)${base}(?:${optional})?`, "i");
+    return new RegExp(`^https?://(?:\\w+\\.)?${base}(?:${optional})?`, "i");
 }
 
 function url_rx(base, optional) {

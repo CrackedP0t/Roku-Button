@@ -25,10 +25,17 @@
     "permissions": [
         "*://*.amazon.com/*",
         "*://*.aiv-cdn.net/*",
-        "<all_urls>",
+        "storage",
         "activeTab",
-        "webRequest",
-        "tabs"
+        "tabs",
+        "webRequest"
     ],
+    "optional_permissions": [
+        "<all_urls>"
+    ],
+    "options_ui": {
+        "browser_style": false,
+        "page": "options.html"
+    },
     "version": "0.0.1"
 }
