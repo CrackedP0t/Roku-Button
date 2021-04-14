@@ -13,8 +13,9 @@
             "*://*.youtube.com/*",
             "*://*.hulu.com/*",
             "*://*.crunchyroll.com/*",
-            "*://*.vudu.com/*",
             "*://*.plex.tv/*",
+            "*://*.vudu.com/*",
+            "*://*.vrv.co/*",
             "*://*.disneyplus.com/*",
             "*://*.twitch.tv/*",
             "*://*.peacocktv.com/*"

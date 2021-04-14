@@ -55,6 +55,9 @@ const extractors = [
         url_extractor: extractor("movie")
     },
     {
+        channel_id: 143105, name: "VRV", url_regexp: url_rx("vrv.co")
+    },
+    {
         channel_id: 291097, name: "Disney Plus", url_regexp: url_rx("disneyplus.com"),
     },
     {
