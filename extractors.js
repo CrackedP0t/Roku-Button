@@ -40,6 +40,9 @@ const extractors = [
         url_extractor: extractor("episode")
     },
     {
+        channel_id: 14654, name: "Funimation", url_regexp: url_rx("funimation.com")
+    },
+    {
         channel_id: 2285, name: "Hulu", url_regexp: url_rx("hulu.com"),
     },
     {
