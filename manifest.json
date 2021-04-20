@@ -2,6 +2,11 @@
     "background": {
         "scripts": ["extractors.js", "background.js"]
     },
+    "browser_action": {
+        "browser_style": false,
+        "default_icon": "RokuLogo5.svg",
+        "default_popup": "browser_action.html"
+    },
     "page_action": {
         "default_icon": "RokuLogo5.svg",
         "default_title": "Play this on your Roku",
@@ -22,7 +27,7 @@
             "*://*.twitch.tv/*",
             "*://*.peacocktv.com/*"
         ]
-    },  
+    },
     "manifest_version": 2,
     "name": "Roku Button",
     "permissions": [
@@ -31,7 +36,8 @@
         "storage",
         "activeTab",
         "tabs",
-        "webRequest"
+        "webRequest",
+        "menus"
     ],
     "optional_permissions": [
         "<all_urls>"

@@ -93,7 +93,7 @@ browser.pageAction.onClicked.addListener(async (tab, on_click_data) => {
     }
 
     const info = extract(tab.url, tab.id);
-    
+
     let qs = [];
     if (info.content_id) qs.push(`contentId=${info.content_id}`);
     if (info.media_type) qs.push(`mediaType=${info.media_type}`);
@@ -105,4 +105,16 @@ browser.pageAction.onClicked.addListener(async (tab, on_click_data) => {
     // Sometimes when the Roku is off, it'll just open to the home screen instead of the app, and respond with 503.
     // However, now that it's on, we can send it again.
     if (response.status == 503) await fetch(url, fetch_init);
+});
+
+browser.menus.create({
+    contexts: ["page_action"],
+    id: "open_options",
+    title: "Options"
+});
+
+browser.menus.onClicked.addListener(async (info, tab) => {
+    if (info.menuItemId == "open_options") {
+        await browser.runtime.openOptionsPage();
+    }
 });
