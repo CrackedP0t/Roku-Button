@@ -13,7 +13,7 @@ async function resetStatus(roku_ip) {
     if (abort) abort.abort();
 
     if (!roku_ip) {
-        setStatus("Please enter the IP address of your Roku");
+        setStatus("This extension needs your Roku's IP address");
     } else if (!ip_rx.test(roku_ip)) {
         setStatus("That's not a valid IP address");
     } else if (!await browser.permissions.contains({ origins: [`*://${roku_ip}/*`] })) {
