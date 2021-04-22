@@ -88,7 +88,7 @@ browser.pageAction.onClicked.addListener(async (tab, on_click_data) => {
     const roku_ip = (await browser.storage.local.get("roku_ip")).roku_ip;
     if (!await browser.permissions.contains({ origins: [`*://${roku_ip}/*`] })) {
         console.error(`We don't have permission for ${roku_ip}`);
-        await browser.runtime.openOptionsPage();
+        browser.runtime.openOptionsPage();
         return;
     }
 
@@ -115,6 +115,6 @@ browser.menus.create({
 
 browser.menus.onClicked.addListener(async (info, tab) => {
     if (info.menuItemId == "open_options") {
-        await browser.runtime.openOptionsPage();
+        browser.runtime.openOptionsPage();
     }
 });
