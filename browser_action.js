@@ -37,10 +37,32 @@ document.addEventListener("DOMContentLoaded", async () => {
     }
 
     for (const el of document.getElementsByClassName("control")) {
-        const key = el.dataset.key;
-        if (!el.title) {
-            el.title = key.replace(/(\w)([A-Z])/, "$1 $2");
+        const ds = el.dataset;
+        const key = ds.key;
+        if (key) {
+            el.title = el.title || key.replace(/(\w)([A-Z])/, "$1 $2");
+            if (ds.repeat) {
+                let repeat_on = async (ev) => {
+                    if (!ds.repeating && ev.buttons & 1) {
+                        ds.repeating = true;
+                        (async () => {
+                            while (ds.repeating) {
+                                await fetch(`http://${roku_ip}:8060/keypress/${key}`, launch_init);
+                            }
+                        })();
+                    }
+                };
+                el.onmousedown = repeat_on;
+                el.onmouseup = () => delete ds.repeating;
+                el.onmouseenter = repeat_on;
+                el.onmouseleave = () => delete ds.repeating;
+            } else {
+                el.onclick = () => fetch(`http://${roku_ip}:8060/keypress/${key}`, launch_init);
+            }
+        } else if (el.dataset.launch) {
+            el.onclick = () => fetch(`http://${roku_ip}:8060/launch/${el.dataset.launch}`, launch_init);
+        } else {
+            el.disabled = true;
         }
-        el.onclick = () => fetch(`http://${roku_ip}:8060/keypress/${key}`, launch_init);
     }
 });
