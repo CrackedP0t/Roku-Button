@@ -1,8 +1,10 @@
 let tab_info = new Map();
 
-function extract(url, id) {
-    let cached = tab_info.get(id);
-    if (cached) return cached;
+function extract(url, tab_id) {
+    if (tab_id) {
+        let cached = tab_info.get(tab_id);
+        if (cached) return cached;
+    }
 
     for (let extractor of extractors) {
         const result = extractor.url_regexp.exec(url);
@@ -29,6 +31,29 @@ function set_title(url, tabId) {
             title: `${info.content_id ? `Play this ${info.media_type ? info.media_type + " " : ""}on your Roku's ${info.name} app` : `Open ${info.name} on your Roku`}`
         });
     }
+}
+
+async function open_on_roku(url, tab_id) {
+    const roku_ip = (await browser.storage.local.get("roku_ip")).roku_ip;
+    if (!await browser.permissions.contains({ origins: [`*://${roku_ip}/*`] })) {
+        console.error(`We don't have permission for ${roku_ip}`);
+        browser.runtime.openOptionsPage();
+        return;
+    }
+
+    const info = extract(url, tab_id);
+
+    let qs = [];
+    if (info.content_id) qs.push(`contentId=${info.content_id}`);
+    if (info.media_type) qs.push(`mediaType=${info.media_type}`);
+    qs = qs.join("&");
+
+    const roku_url = `http://${roku_ip}:8060/launch/${info.channel_id}${qs ? "?" + qs : ""}`;
+
+    const response = await fetch(roku_url, fetch_init);
+    // Sometimes when the Roku is off, it'll just open to the home screen instead of the app, and respond with 503.
+    // However, now that it's on, we can send it again.
+    if (response.status == 503) await fetch(roku_url, fetch_init);
 }
 
 browser.tabs.onUpdated.addListener(async (tabId, changeInfo, tab) => {
@@ -84,27 +109,8 @@ const fetch_init = {
     headers: { "cache-control": "no-cache" },
     method: "POST",
 };
-browser.pageAction.onClicked.addListener(async (tab, on_click_data) => {
-    const roku_ip = (await browser.storage.local.get("roku_ip")).roku_ip;
-    if (!await browser.permissions.contains({ origins: [`*://${roku_ip}/*`] })) {
-        console.error(`We don't have permission for ${roku_ip}`);
-        browser.runtime.openOptionsPage();
-        return;
-    }
-
-    const info = extract(tab.url, tab.id);
-
-    let qs = [];
-    if (info.content_id) qs.push(`contentId=${info.content_id}`);
-    if (info.media_type) qs.push(`mediaType=${info.media_type}`);
-    qs = qs.join("&");
-
-    const url = `http://${roku_ip}:8060/launch/${info.channel_id}${qs ? "?" + qs : ""}`;
-
-    const response = await fetch(url, fetch_init);
-    // Sometimes when the Roku is off, it'll just open to the home screen instead of the app, and respond with 503.
-    // However, now that it's on, we can send it again.
-    if (response.status == 503) await fetch(url, fetch_init);
+browser.pageAction.onClicked.addListener((tab, on_click_data) => {
+    open_on_roku(tab.url, tab.id);
 });
 
 browser.menus.create({
@@ -112,9 +118,32 @@ browser.menus.create({
     id: "open_options",
     title: "Options"
 });
+browser.menus.create({
+    contexts: ["link"],
+    id: "app_link",
+    title: "Open on your Roku",
+    targetUrlPatterns: [
+        "*://*.netflix.com/*",
+        "*://*.amazon.com/Amazon-Video/*",
+        "*://*.amazon.com/gp/video/detail/*",
+        "*://*.pandora.com/*",
+        "*://*.youtube.com/*",
+        "*://*.funimation.com/*",
+        "*://*.hulu.com/*",
+        "*://*.crunchyroll.com/*",
+        "*://*.plex.tv/*",
+        "*://*.vudu.com/*",
+        "*://*.hbomax.com/*",
+        "*://*.vrv.co/*",
+        "*://*.disneyplus.com/*",
+        "*://*.twitch.tv/*",
+        "*://*.peacocktv.com/*"
+]});
 
 browser.menus.onClicked.addListener(async (info, tab) => {
     if (info.menuItemId == "open_options") {
         browser.runtime.openOptionsPage();
+    } else if (info.menuItemId == "app_link") {
+        open_on_roku(info.linkUrl);
     }
 });
