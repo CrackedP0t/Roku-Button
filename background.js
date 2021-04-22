@@ -1,3 +1,21 @@
+const app_match_patterns = [
+    "*://*.netflix.com/*",
+    "*://*.amazon.com/Amazon-Video/*",
+    "*://*.amazon.com/gp/video/detail/*",
+    "*://*.pandora.com/*",
+    "*://*.youtube.com/*",
+    "*://*.funimation.com/*",
+    "*://*.hulu.com/*",
+    "*://*.crunchyroll.com/*",
+    "*://*.plex.tv/*",
+    "*://*.vudu.com/*",
+    "*://*.hbomax.com/*",
+    "*://*.vrv.co/*",
+    "*://*.disneyplus.com/*",
+    "*://*.twitch.tv/*",
+    "*://*.peacocktv.com/*"
+];
+
 let tab_info = new Map();
 
 function extract(url, tab_id) {
@@ -23,14 +41,16 @@ function extract(url, tab_id) {
     }
 }
 
-function set_title(url, tabId) {
-    const info = extract(url, tabId);
-    if (info) {
-        browser.pageAction.setTitle({
-            tabId: tabId,
-            title: `${info.content_id ? `Play this ${info.media_type ? info.media_type + " " : ""}on your Roku's ${info.name} app` : `Open ${info.name} on your Roku`}`
-        });
-    }
+function get_title(url, tab_id) {
+    const info = extract(url, tab_id);
+    return `${info.content_id ? `Play this ${info.media_type ? info.media_type + " " : ""}on your Roku's ${info.name} app` : `Open ${info.name} on your Roku`}`;
+}
+
+function set_title(url, tab_id) {
+    browser.pageAction.setTitle({
+        tabId: tab_id,
+        title: get_title(url, tab_id)
+    });
 }
 
 async function open_on_roku(url, tab_id) {
@@ -58,8 +78,8 @@ async function open_on_roku(url, tab_id) {
 
 browser.tabs.onUpdated.addListener(async (tabId, changeInfo, tab) => {
     if (changeInfo.status === "loading") {
-        set_title(changeInfo.url, tabId);
         tab_info.delete(tabId);
+        set_title(tab.url, tabId);
     } else if (changeInfo.status == "complete" && !extract(tab.url, tabId)) {
         browser.pageAction.hide(tabId);
     }
@@ -122,28 +142,20 @@ browser.menus.create({
     contexts: ["link"],
     id: "app_link",
     title: "Open on your Roku",
-    targetUrlPatterns: [
-        "*://*.netflix.com/*",
-        "*://*.amazon.com/Amazon-Video/*",
-        "*://*.amazon.com/gp/video/detail/*",
-        "*://*.pandora.com/*",
-        "*://*.youtube.com/*",
-        "*://*.funimation.com/*",
-        "*://*.hulu.com/*",
-        "*://*.crunchyroll.com/*",
-        "*://*.plex.tv/*",
-        "*://*.vudu.com/*",
-        "*://*.hbomax.com/*",
-        "*://*.vrv.co/*",
-        "*://*.disneyplus.com/*",
-        "*://*.twitch.tv/*",
-        "*://*.peacocktv.com/*"
-]});
+    targetUrlPatterns: app_match_patterns
+});
 
 browser.menus.onClicked.addListener(async (info, tab) => {
     if (info.menuItemId == "open_options") {
         browser.runtime.openOptionsPage();
     } else if (info.menuItemId == "app_link") {
         open_on_roku(info.linkUrl);
+    }
+});
+
+browser.runtime.onInstalled.addListener(async (info, tab) => {
+    const relevant = await browser.tabs.query({url: app_match_patterns});
+    for (const tab of relevant) {
+        set_title(tab.url, tab.id);
     }
 });
