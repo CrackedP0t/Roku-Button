@@ -4,8 +4,11 @@
     },
     "browser_action": {
         "browser_style": false,
-        "default_icon": "RokuLogo5.svg",
         "default_popup": "browser_action.html"
+    },
+    "icons": {
+        "48": "RokuLogo5.svg",
+        "96": "RokuLogo5.svg"
     },
     "page_action": {
         "default_icon": "RokuLogo5.svg",
