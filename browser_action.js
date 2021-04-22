@@ -21,7 +21,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     const parser = new DOMParser();
     const doc = parser.parseFromString(await res.text(), "application/xml");
 
-    const channel_list = $("#buttons");
+    const channel_list = $("#channels");
 
     for (const app of doc.documentElement.children) {
         if (app.getAttribute("type") == "appl") {

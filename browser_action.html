@@ -9,7 +9,15 @@
         }
         #buttons {
             display: grid;
-            grid-template-columns: 1fr 1fr 1fr;
+            grid-template-columns: repeat(6, 1fr);
+            justify-content: stretch;
+            align-content: stretch;
+            width: 100%;
+            height: 100%;
+        }
+        #channels {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
             justify-content: stretch;
             align-content: stretch;
             width: 100%;
@@ -26,28 +34,27 @@
 </head>
 <body>
     <div id="buttons">
-        <button class="control" data-key="Back">🠨</button>
-        <button class="control" data-key="Power">⏻</button>
-        <button class="control" data-key="Home">⌂</button>
-
         <button class="control" title="Computer" data-key="InputHDMI3">💻</button>
         <button class="control" data-key="Up">🡩</button>
+        <button class="control" data-key="Power">⏻</button>
+        <button class="control" data-key="Back">🠨</button>
+        <button class="control" data-key="Home">⌂</button>
         <button class="control" data-key="VolumeUp">🔊</button>
 
         <button class="control" data-key="Left">🡨</button>
         <button class="control" data-key="Select">OK</button>
         <button class="control" data-key="Right">🡪</button>
-
+        <button class="control" data-key="InstantReplay">&#x27F2;</button>
+        <button class="control" data-key="Info">🞸</button>
+        <button class="control" data-key="VolumeMute">🔇</button>
+        
         <button class="control" title="Switch" data-key="InputHDMI1">🎮</button>
         <button class="control" data-key="Down">🡫</button>
-        <button class="control" data-key="VolumeDown">🔉</button>
-
-        <button class="control" data-key="InstantReplay">&#x27F2;</button>
-        <button class="control" data-key="VolumeMute">🔇</button>
-        <button class="control" data-key="Info">🞸</button>
-
         <button class="control" data-key="Rev"> &#x23EA;</button>
         <button class="control" data-key="Play">&#x23EF;</button>
         <button class="control" data-key="Fwd">&#x23E9;</button>
+        <button class="control" data-key="VolumeDown">🔉</button>
     </div>
+
+    <div id="channels"></div>
 </body>
