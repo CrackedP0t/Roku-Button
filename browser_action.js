@@ -11,7 +11,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     const roku_ip = (await browser.storage.local.get("roku_ip")).roku_ip;
     if (!await browser.permissions.contains({ origins: [`*://${roku_ip}/*`] })) {
         console.error(`We don't have permission for ${roku_ip}`);
-        await browser.runtime.openOptionsPage();
+        browser.runtime.openOptionsPage();
         window.close();
         return;
     }
