@@ -40,7 +40,8 @@
         "activeTab",
         "tabs",
         "webRequest",
-        "menus"
+        "menus",
+        "bookmarks"
     ],
     "optional_permissions": [
         "<all_urls>"

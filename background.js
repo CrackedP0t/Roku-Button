@@ -54,6 +54,7 @@ function set_title(url, tab_id) {
 }
 
 async function open_on_roku(url, tab_id) {
+    if (typeof(url) != "string") throw `URL is ${url}`;
     const roku_ip = (await browser.storage.local.get("roku_ip")).roku_ip;
     if (!await browser.permissions.contains({ origins: [`*://${roku_ip}/*`] })) {
         console.error(`We don't have permission for ${roku_ip}`);
@@ -139,7 +140,7 @@ browser.menus.create({
     title: "Options"
 });
 browser.menus.create({
-    contexts: ["link"],
+    contexts: ["link", "bookmark"],
     id: "app_link",
     title: "Open on your Roku",
     targetUrlPatterns: app_match_patterns
@@ -149,7 +150,14 @@ browser.menus.onClicked.addListener(async (info, tab) => {
     if (info.menuItemId == "open_options") {
         browser.runtime.openOptionsPage();
     } else if (info.menuItemId == "app_link") {
-        open_on_roku(info.linkUrl);
+        if (info.linkUrl) {
+            open_on_roku(info.linkUrl);
+        } else if (info.bookmarkId) {
+            let url = (await browser.bookmarks.get(info.bookmarkId))?.[0]?.url;
+            if (url) {
+                open_on_roku(url);
+            }
+        }
     }
 });
 
