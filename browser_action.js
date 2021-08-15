@@ -39,7 +39,6 @@ document.addEventListener("DOMContentLoaded", async () => {
             const button = document.createElement("img");
             button.classList.add("channel");
             button.src = `http://${roku_ip}:8060/query/icon/${app.id}`;
-            button.innerHTML = app.innerHTML;
             button.onclick = () => {
                 r(roku_ip, "launch/${app.id}", launch_init);
             }
