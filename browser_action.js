@@ -3,6 +3,17 @@ const launch_init = {
     method: "POST",
 };
 
+const timeout = 3000;
+
+async function r(ip, path, o={}) {
+    const abort = new AbortController();
+    const options = {  ...o, signal: abort.signal };
+    const id = setTimeout(() => abort.abort(), timeout);
+    const res = await fetch(`http://${ip}:8060/${path}`, options);
+    clearTimeout(id);
+    return res;
+}
+
 function $(q) {
     return document.querySelector(q);
 }
@@ -16,7 +27,7 @@ document.addEventListener("DOMContentLoaded", async () => {
         return;
     }
 
-    const res = await fetch(`http://${roku_ip}:8060/query/apps`);
+    const res = await r(roku_ip, "query/apps");
 
     const parser = new DOMParser();
     const doc = parser.parseFromString(await res.text(), "application/xml");
@@ -30,7 +41,7 @@ document.addEventListener("DOMContentLoaded", async () => {
             button.src = `http://${roku_ip}:8060/query/icon/${app.id}`;
             button.innerHTML = app.innerHTML;
             button.onclick = () => {
-                fetch(`http://${roku_ip}:8060/launch/${app.id}`, launch_init);
+                r(roku_ip, "launch/${app.id}", launch_init);
             }
             channel_list.appendChild(button);
         }
@@ -47,7 +58,7 @@ document.addEventListener("DOMContentLoaded", async () => {
                         ds.repeating = true;
                         (async () => {
                             while (ds.repeating) {
-                                await fetch(`http://${roku_ip}:8060/keypress/${key}`, launch_init);
+                                await r(roku_ip, `keypress/${key}`, launch_init);
                             }
                         })();
                     }
@@ -57,10 +68,10 @@ document.addEventListener("DOMContentLoaded", async () => {
                 el.onmouseenter = repeat_on;
                 el.onmouseleave = () => delete ds.repeating;
             } else {
-                el.onclick = () => fetch(`http://${roku_ip}:8060/keypress/${key}`, launch_init);
+                el.onclick = () => r(roku_ip, `keypress/${key}`, launch_init);
             }
         } else if (el.dataset.launch) {
-            el.onclick = () => fetch(`http://${roku_ip}:8060/launch/${el.dataset.launch}`, launch_init);
+            el.onclick = () => r(roku_ip, `launch/${el.dataset.launch}`, launch_init);
         } else {
             el.disabled = true;
         }

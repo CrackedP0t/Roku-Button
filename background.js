@@ -54,7 +54,7 @@ function set_title(url, tab_id) {
 }
 
 async function open_on_roku(url, tab_id) {
-    if (typeof(url) != "string") throw `URL is ${url}`;
+    if (typeof (url) != "string") throw `URL is ${url}`;
     const roku_ip = (await browser.storage.local.get("roku_ip")).roku_ip;
     if (!await browser.permissions.contains({ origins: [`*://${roku_ip}/*`] })) {
         console.error(`We don't have permission for ${roku_ip}`);
@@ -75,6 +75,42 @@ async function open_on_roku(url, tab_id) {
     // Sometimes when the Roku is off, it'll just open to the home screen instead of the app, and respond with 503.
     // However, now that it's on, we can send it again.
     if (response.status == 503) await fetch(roku_url, fetch_init);
+}
+
+async function redo_menus() {
+    console.log("redo_menus");
+    let options = await browser.storage.local.get(["context_menus", "bookmark_menus"]);
+    browser.menus.removeAll();
+    if (options.context_menus) {
+        browser.menus.create({
+            contexts: ["page_action"],
+            id: "open_options",
+            title: "Options"
+        });
+        let contexts = ["link"];
+        if (options.bookmark_menus) contexts.push("bookmark");
+        browser.menus.create({
+            contexts,
+            id: "app_link",
+            title: "Open on your Roku",
+            targetUrlPatterns: app_match_patterns
+        });
+
+        browser.menus.onClicked.addListener(async (info, tab) => {
+            if (info.menuItemId == "open_options") {
+                browser.runtime.openOptionsPage();
+            } else if (info.menuItemId == "app_link") {
+                if (info.linkUrl) {
+                    open_on_roku(info.linkUrl);
+                } else if (info.bookmarkId) {
+                    let url = (await browser.bookmarks.get(info.bookmarkId))?.[0]?.url;
+                    if (url) {
+                        open_on_roku(url);
+                    }
+                }
+            }
+        });
+    }
 }
 
 browser.tabs.onUpdated.addListener(async (tabId, changeInfo, tab) => {
@@ -134,36 +170,14 @@ browser.pageAction.onClicked.addListener((tab, on_click_data) => {
     open_on_roku(tab.url, tab.id);
 });
 
-browser.menus.create({
-    contexts: ["page_action"],
-    id: "open_options",
-    title: "Options"
-});
-browser.menus.create({
-    contexts: ["link", "bookmark"],
-    id: "app_link",
-    title: "Open on your Roku",
-    targetUrlPatterns: app_match_patterns
-});
-
-browser.menus.onClicked.addListener(async (info, tab) => {
-    if (info.menuItemId == "open_options") {
-        browser.runtime.openOptionsPage();
-    } else if (info.menuItemId == "app_link") {
-        if (info.linkUrl) {
-            open_on_roku(info.linkUrl);
-        } else if (info.bookmarkId) {
-            let url = (await browser.bookmarks.get(info.bookmarkId))?.[0]?.url;
-            if (url) {
-                open_on_roku(url);
-            }
-        }
-    }
-});
-
 browser.runtime.onInstalled.addListener(async (info, tab) => {
-    const relevant = await browser.tabs.query({url: app_match_patterns});
+    const relevant = await browser.tabs.query({ url: app_match_patterns });
     for (const tab of relevant) {
         set_title(tab.url, tab.id);
     }
+    redo_menus();
+});
+
+browser.runtime.onMessage.addListener(async (message) => {
+    if (message == "redo_menus") redo_menus();
 });
