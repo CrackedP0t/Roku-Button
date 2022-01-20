@@ -81,12 +81,12 @@ async function redo_menus() {
     console.log("redo_menus");
     let options = await browser.storage.local.get(["context_menus", "bookmark_menus"]);
     browser.menus.removeAll();
+    browser.menus.create({
+        contexts: ["page_action"],
+        id: "open_options",
+        title: "Options"
+    });
     if (options.context_menus) {
-        browser.menus.create({
-            contexts: ["page_action"],
-            id: "open_options",
-            title: "Options"
-        });
         let contexts = ["link"];
         if (options.bookmark_menus) contexts.push("bookmark");
         browser.menus.create({
@@ -94,21 +94,6 @@ async function redo_menus() {
             id: "app_link",
             title: "Open on your Roku",
             targetUrlPatterns: app_match_patterns
-        });
-
-        browser.menus.onClicked.addListener(async (info, tab) => {
-            if (info.menuItemId == "open_options") {
-                browser.runtime.openOptionsPage();
-            } else if (info.menuItemId == "app_link") {
-                if (info.linkUrl) {
-                    open_on_roku(info.linkUrl);
-                } else if (info.bookmarkId) {
-                    let url = (await browser.bookmarks.get(info.bookmarkId))?.[0]?.url;
-                    if (url) {
-                        open_on_roku(url);
-                    }
-                }
-            }
         });
     }
 }
@@ -176,6 +161,20 @@ browser.runtime.onInstalled.addListener(async (info, tab) => {
         set_title(tab.url, tab.id);
     }
     redo_menus();
+    browser.menus.onClicked.addListener(async (info, tab) => {
+        if (info.menuItemId == "open_options") {
+            browser.runtime.openOptionsPage();
+        } else if (info.menuItemId == "app_link") {
+            if (info.linkUrl) {
+                open_on_roku(info.linkUrl);
+            } else if (info.bookmarkId) {
+                let url = (await browser.bookmarks.get(info.bookmarkId))?.[0]?.url;
+                if (url) {
+                    open_on_roku(url);
+                }
+            }
+        }
+    });
 });
 
 browser.runtime.onMessage.addListener(async (message) => {

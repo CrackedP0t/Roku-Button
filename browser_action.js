@@ -40,7 +40,7 @@ document.addEventListener("DOMContentLoaded", async () => {
             button.classList.add("channel");
             button.src = `http://${roku_ip}:8060/query/icon/${app.id}`;
             button.onclick = () => {
-                r(roku_ip, "launch/${app.id}", launch_init);
+                r(roku_ip, `launch/${app.id}`, launch_init);
             }
             channel_list.appendChild(button);
         }
