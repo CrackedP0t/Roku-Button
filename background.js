@@ -78,7 +78,6 @@ async function open_on_roku(url, tab_id) {
 }
 
 async function redo_menus() {
-    console.log("redo_menus");
     let options = await browser.storage.local.get(["context_menus", "bookmark_menus"]);
     browser.menus.removeAll();
     browser.menus.create({
@@ -96,6 +95,28 @@ async function redo_menus() {
             targetUrlPatterns: app_match_patterns
         });
     }
+}
+
+async function setup() {
+    const relevant = await browser.tabs.query({ url: app_match_patterns });
+    for (const tab of relevant) {
+        set_title(tab.url, tab.id);
+    }
+    redo_menus();
+    browser.menus.onClicked.addListener(async (info, _tab) => {
+        if (info.menuItemId == "open_options") {
+            browser.runtime.openOptionsPage();
+        } else if (info.menuItemId == "app_link") {
+            if (info.linkUrl) {
+                open_on_roku(info.linkUrl);
+            } else if (info.bookmarkId) {
+                let url = (await browser.bookmarks.get(info.bookmarkId))?.[0]?.url;
+                if (url) {
+                    open_on_roku(url);
+                }
+            }
+        }
+    });
 }
 
 browser.tabs.onUpdated.addListener(async (tabId, changeInfo, tab) => {
@@ -155,27 +176,8 @@ browser.pageAction.onClicked.addListener((tab, on_click_data) => {
     open_on_roku(tab.url, tab.id);
 });
 
-browser.runtime.onInstalled.addListener(async (info, tab) => {
-    const relevant = await browser.tabs.query({ url: app_match_patterns });
-    for (const tab of relevant) {
-        set_title(tab.url, tab.id);
-    }
-    redo_menus();
-    browser.menus.onClicked.addListener(async (info, tab) => {
-        if (info.menuItemId == "open_options") {
-            browser.runtime.openOptionsPage();
-        } else if (info.menuItemId == "app_link") {
-            if (info.linkUrl) {
-                open_on_roku(info.linkUrl);
-            } else if (info.bookmarkId) {
-                let url = (await browser.bookmarks.get(info.bookmarkId))?.[0]?.url;
-                if (url) {
-                    open_on_roku(url);
-                }
-            }
-        }
-    });
-});
+browser.runtime.onInstalled.addListener(setup);
+browser.runtime.onStartup.addListener(setup);
 
 browser.runtime.onMessage.addListener(async (message) => {
     if (message == "redo_menus") redo_menus();
