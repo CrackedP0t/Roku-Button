@@ -50,5 +50,10 @@
         "browser_style": false,
         "page": "options.html"
     },
-    "version": "0.1.4"
+    "version": "0.1.4",
+    "browser_specific_settings": {
+        "gecko": {
+            "id": "{56963743-8b9f-469d-9c6a-f7dc478b20f2}"
+        }
+    }      
 }
