@@ -34,22 +34,6 @@ document.addEventListener("DOMContentLoaded", async () => {
 
     const channel_list = $("#channels");
 
-    for (const app of doc.documentElement.children) {
-        if (app.getAttribute("type") == "appl") {
-            const button = document.createElement("img");
-            button.classList.add("channel");
-            // Setting img src directly causes mixed content error
-            const img_res = await r(roku_ip, `query/icon/${app.id}`);
-            const blob = await img_res.blob();
-            button.src = URL.createObjectURL(blob);
-            button.alt = app.textContent;
-            button.onclick = () => {
-                r(roku_ip, `launch/${app.id}`, launch_init);
-            }
-            channel_list.appendChild(button);
-        }
-    }
-
     for (const el of document.getElementsByClassName("control")) {
         const ds = el.dataset;
         const key = ds.key;
@@ -79,4 +63,30 @@ document.addEventListener("DOMContentLoaded", async () => {
             el.disabled = true;
         }
     }
+
+    var button_promises = [];
+
+    for (const app of doc.documentElement.children) {
+        if (app.getAttribute("type") == "appl") {
+            const button = document.createElement("img");
+            button.classList.add("channel");
+            // Setting img src directly causes mixed content error
+            button.alt = app.textContent;
+            button.onclick = () => {
+                r(roku_ip, `launch/${app.id}`, launch_init);
+            }
+            channel_list.appendChild(button);
+
+            async function button_promise() {
+                const img_res = await r(roku_ip, `query/icon/${app.id}`);
+                const blob = await img_res.blob();
+                button.src = URL.createObjectURL(blob);
+                console.log(button.src);
+            }
+
+            button_promises.push(button_promise());
+        }
+    }
+
+    await Promise.allSettled(button_promises);
 });
