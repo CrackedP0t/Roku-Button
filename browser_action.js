@@ -38,7 +38,11 @@ document.addEventListener("DOMContentLoaded", async () => {
         if (app.getAttribute("type") == "appl") {
             const button = document.createElement("img");
             button.classList.add("channel");
-            button.src = `http://${roku_ip}:8060/query/icon/${app.id}`;
+            // Setting img src directly causes mixed content error
+            const img_res = await r(roku_ip, `query/icon/${app.id}`);
+            const blob = await img_res.blob();
+            button.src = URL.createObjectURL(blob);
+            button.alt = app.textContent;
             button.onclick = () => {
                 r(roku_ip, `launch/${app.id}`, launch_init);
             }
